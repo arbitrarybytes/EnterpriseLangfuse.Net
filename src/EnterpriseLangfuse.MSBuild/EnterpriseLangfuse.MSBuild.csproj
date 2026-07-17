@@ -1,0 +1,94 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <PackageId>EnterpriseLangfuse.MSBuild</PackageId>
+    <Description>Code-as-Truth GitOps for Langfuse: an MSBuild task that syncs version-controlled .prompt.yaml files to Langfuse, tagged with the current Git commit. Powered by the Langfuse AutoSDK.</Description>
+    <PackageTags>langfuse;llmops;msbuild;gitops;cicd</PackageTags>
+    <RootNamespace>EnterpriseLangfuse.MSBuild</RootNamespace>
+
+    <!--
+      Build-time only: consumers get the task and its targets, never a compile-time reference.
+      IncludeBuildOutput=false because the task assembly ships under tasks/ (see PackTaskAssets),
+      not lib/; SuppressDependenciesWhenPacking because a task's dependencies must sit beside it
+      rather than flow to the consumer's own dependency graph.
+    -->
+    <IsPackable>true</IsPackable>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <!-- NU5100: assemblies under tasks/ rather than lib/ is exactly what a task package wants. -->
+    <NoWarn>$(NoWarn);NU5100</NoWarn>
+
+    <!--
+      This assembly is loaded by the MSBuild host on CoreCLR and is never part of a published
+      application, so there is no AOT surface to guard; enabling the analyzers would only flag the
+      AutoSDK's reflection-based paths that AOT will never reach here.
+    -->
+    <IsAotCompatible>false</IsAotCompatible>
+
+    <!--
+      A task assembly is loaded by path, not as an application, so there is no deps.json to resolve
+      its dependencies for it: every assembly it needs must sit physically beside it. Without this,
+      the task loads and then throws FileNotFoundException for Langfuse.dll on first use.
+    -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      GHSA-w3q9-fxm7-j8fq is the advisory against Microsoft.Build.* 17.14.8 and concerns the MSBuild
+      engine assemblies at runtime. They are referenced ExcludeAssets="runtime" below — never shipped,
+      never loaded — so the host's own patched MSBuild is what actually executes. Bumping to a fixed
+      version would instead raise the minimum host we can be loaded by, which is a real regression for
+      a real non-issue. Suppressed per-advisory rather than via NoWarn NU1903, so any future advisory
+      against any other dependency still fails the build.
+    -->
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-w3q9-fxm7-j8fq" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      ExcludeAssets="runtime": the MSBuild host supplies these at execution time. Shipping our own
+      copies would load a second Microsoft.Build.Framework into the host and break type identity
+      (an ITaskItem from the host would not be our ITaskItem).
+    -->
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" />
+    <!-- The one AutoSDK path that round-trips correctly: prompt creation. See SyncLangfusePromptsTask. -->
+    <PackageReference Include="Langfuse" />
+    <PackageReference Include="YamlDotNet" />
+  </ItemGroup>
+
+  <!-- One prompt-file schema shared by the runtime, the generator and the MSBuild task. -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)../Shared/*.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="EnterpriseLangfuse.MSBuild.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="build/$(PackageId).props" Pack="true" PackagePath="build/" />
+    <None Include="build/$(PackageId).targets" Pack="true" PackagePath="build/" />
+    <None Include="$(MSBuildThisFileDirectory)../../README.md" Pack="true" PackagePath="/" Visible="false" />
+  </ItemGroup>
+
+  <!--
+    Packs the task next to every assembly it needs at execution time. ReferenceCopyLocalPaths is the
+    right source: ExcludeAssets="runtime" has already removed the MSBuild assemblies from it, so this
+    picks up exactly the dependencies the host will not provide.
+  -->
+  <Target Name="PackTaskAssets" DependsOnTargets="Build;ResolveReferences" BeforeTargets="_GetPackageFiles">
+    <ItemGroup>
+      <None Include="$(TargetPath)" Pack="true" PackagePath="tasks/$(TargetFramework)/" Visible="false" />
+      <None Include="@(ReferenceCopyLocalPaths)"
+            Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.dll'"
+            Pack="true"
+            PackagePath="tasks/$(TargetFramework)/"
+            Visible="false" />
+    </ItemGroup>
+  </Target>
+
+</Project>

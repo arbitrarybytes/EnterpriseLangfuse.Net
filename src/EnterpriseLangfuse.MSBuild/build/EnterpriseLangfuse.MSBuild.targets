@@ -1,0 +1,53 @@
+<Project>
+
+  <UsingTask TaskName="EnterpriseLangfuse.MSBuild.SyncLangfusePromptsTask"
+             AssemblyFile="$(EnterpriseLangfuseTaskAssembly)" />
+
+  <!--
+    Always callable by hand (`dotnet build -t:SyncLangfusePrompts`), which is the recommended shape
+    for a deploy pipeline: sync as its own auditable step rather than as a side effect of a publish.
+  -->
+  <Target Name="SyncLangfusePrompts">
+    <!--
+      The task assembly targets net10.0, and the Langfuse AutoSDK it depends on offers no
+      netstandard2.0 surface to multitarget against, so .NET Framework MSBuild hosts (Visual
+      Studio, MSBuild.exe) cannot load it. Failing with an instruction beats an opaque
+      "could not load file or assembly" from the UsingTask.
+    -->
+    <Error Condition="'$(MSBuildRuntimeType)' != 'Core'"
+           Text="SyncLangfusePrompts requires the dotnet CLI (dotnet build/publish); it cannot run under Visual Studio/MSBuild.exe." />
+
+    <Message Importance="Normal"
+             Condition="'@(LangfusePromptFile)' == ''"
+             Text="Langfuse sync found no .prompt.yaml files under $(MSBuildProjectDirectory)." />
+
+    <!--
+      Prefer the LANGFUSE_PUBLIC_KEY/LANGFUSE_SECRET_KEY environment variables over the
+      LangfusePublicKey/LangfuseSecretKey properties: a secret passed via -p: is recorded
+      verbatim in any binary log (/bl). The task reads the environment variables itself when
+      the properties are empty.
+    -->
+    <SyncLangfusePromptsTask PromptFiles="@(LangfusePromptFile)"
+                             PublicKey="$(LangfusePublicKey)"
+                             SecretKey="$(LangfuseSecretKey)"
+                             BaseUrl="$(LangfuseBaseUrl)"
+                             Labels="$(LangfusePromptLabels)"
+                             CommitMessage="$(LangfuseCommitMessage)"
+                             CommitHash="$(LangfuseCommitHash)"
+                             DryRun="$(SyncLangfusePromptsDryRun)"
+                             ProjectDirectory="$(MSBuildProjectDirectory)"
+                             Condition="'@(LangfusePromptFile)' != '' and '$(MSBuildRuntimeType)' == 'Core'">
+      <Output TaskParameter="SyncedPromptCount" PropertyName="LangfuseSyncedPromptCount" />
+    </SyncLangfusePromptsTask>
+  </Target>
+
+  <!--
+    Separate from the target above so that the publish hook can be switched off without also making
+    the target unavailable to an explicit invocation.
+  -->
+  <Target Name="SyncLangfusePromptsOnPublish"
+          AfterTargets="Publish"
+          DependsOnTargets="SyncLangfusePrompts"
+          Condition="'$(SyncLangfusePromptsOnPublish)' == 'true'" />
+
+</Project>

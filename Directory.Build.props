@@ -1,0 +1,27 @@
+<Project>
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <!--
+    AOT/trim analysis is switched on in Directory.Build.targets, not here: this file is imported
+    before the csproj body, so $(TargetFramework) and $(IsPackable) are not yet assigned and any
+    condition on them silently evaluates false, leaving the analysers off while appearing configured.
+  -->
+
+  <PropertyGroup>
+    <Authors>EnterpriseLangfuse.NET</Authors>
+    <Product>EnterpriseLangfuse.NET</Product>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryType>git</RepositoryType>
+    <VersionPrefix>0.1.0</VersionPrefix>
+  </PropertyGroup>
+
+</Project>

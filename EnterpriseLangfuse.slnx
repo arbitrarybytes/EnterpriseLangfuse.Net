@@ -1,0 +1,22 @@
+<Solution>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/EnterpriseLangfuse.Benchmarks/EnterpriseLangfuse.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/RefundAgent/RefundAgent.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/EnterpriseLangfuse.Core/EnterpriseLangfuse.Core.csproj" />
+    <Project Path="src/EnterpriseLangfuse.Extensions.AI/EnterpriseLangfuse.Extensions.AI.csproj" />
+    <Project Path="src/EnterpriseLangfuse.Generators/EnterpriseLangfuse.Generators.csproj" />
+    <Project Path="src/EnterpriseLangfuse.MSBuild/EnterpriseLangfuse.MSBuild.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/EnterpriseLangfuse.AotSmokeTest/EnterpriseLangfuse.AotSmokeTest.csproj" />
+    <Project Path="tests/EnterpriseLangfuse.Core.Tests/EnterpriseLangfuse.Core.Tests.csproj" />
+    <Project Path="tests/EnterpriseLangfuse.Extensions.AI.Tests/EnterpriseLangfuse.Extensions.AI.Tests.csproj" />
+    <Project Path="tests/EnterpriseLangfuse.Generators.Tests/EnterpriseLangfuse.Generators.Tests.csproj" />
+    <Project Path="tests/EnterpriseLangfuse.LiveValidation/EnterpriseLangfuse.LiveValidation.csproj" />
+    <Project Path="tests/EnterpriseLangfuse.MSBuild.Tests/EnterpriseLangfuse.MSBuild.Tests.csproj" />
+  </Folder>
+</Solution>

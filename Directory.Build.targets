@@ -1,0 +1,17 @@
+<Project>
+
+  <!--
+    Imported AFTER the project body, so $(TargetFramework) and $(IsPackable) are assigned and these
+    conditions actually evaluate. The same conditions in Directory.Build.props are dead — the file is
+    imported first, when both properties are still empty — which silently leaves the AOT analysers off
+    on a library that advertises AOT support.
+
+    Shipping libraries opt in (Spec S4 requires IsAotCompatible). Test, benchmark and build-time
+    (MSBuild task / Roslyn analyzer) projects opt out via IsPackable=false: they have no AOT surface,
+    and netstandard2.0 does not support the setting at all.
+  -->
+  <PropertyGroup Condition="'$(IsPackable)' != 'false' AND '$(TargetFramework)' == 'net10.0'">
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <PackageId>EnterpriseLangfuse.Extensions.AI</PackageId>
+    <Description>Zero-touch Langfuse tracing for Microsoft.Extensions.AI. A DelegatingChatClient that captures model, tokens, tools and timings for every LLM call and dispatches them off the hot path.</Description>
+    <PackageTags>langfuse;llmops;microsoft-extensions-ai;meai;tracing;observability</PackageTags>
+    <RootNamespace>EnterpriseLangfuse.Extensions.AI</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.AI" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../EnterpriseLangfuse.Core/EnterpriseLangfuse.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="EnterpriseLangfuse.Extensions.AI.Tests" />
+    <InternalsVisibleTo Include="EnterpriseLangfuse.Benchmarks" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)../../README.md" Pack="true" PackagePath="/" Visible="false" />
+  </ItemGroup>
+
+</Project>

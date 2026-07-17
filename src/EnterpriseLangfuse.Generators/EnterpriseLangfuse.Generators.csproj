@@ -1,0 +1,83 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Roslyn loads analyzers into the compiler's own netstandard2.0 context; any other TFM will not load. -->
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <PackageId>EnterpriseLangfuse.Generators</PackageId>
+    <Description>Roslyn incremental generator that turns .prompt.yaml files into strongly typed, compiler-enforced IPromptProvider extension methods for EnterpriseLangfuse.NET.</Description>
+    <PackageTags>langfuse;llmops;roslyn;source-generator;analyzer</PackageTags>
+    <!--
+      This package ships only an analyzer: the assembly belongs under analyzers/dotnet/cs (see
+      _AddAnalyzerToPackage below), not lib/, and consumers must not compile against it.
+    -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- PrivateAssets: the compiler supplies Roslyn at load time; shipping it would conflict with the host. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
+    <!--
+      GeneratePathProperty exposes $(PKGYamlDotNet) so the dll can be copied next to the analyzer.
+      An analyzer runs outside NuGet's reach: the compiler probes only the analyzer directory, so an
+      unbundled dependency fails at load with a silent "generator did not run" rather than an error.
+    -->
+    <PackageReference Include="YamlDotNet" PrivateAssets="all" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <!-- One prompt-file schema shared by the runtime, the generator and the MSBuild task. -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)../Shared/*.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <!-- RS2008 requires every DiagnosticDescriptor to be tracked in an analyzer release file. -->
+  <ItemGroup>
+    <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+    <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)../../README.md" Pack="true" PackagePath="/" Visible="false" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddAnalyzerToPackage</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+
+  <!--
+    $(TargetPath) and $(PKGYamlDotNet) are only defined once the SDK targets have run, so the package
+    contents are declared in a target rather than a top-level ItemGroup.
+  -->
+  <Target Name="_AddAnalyzerToPackage">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(TargetPath)" PackagePath="analyzers/dotnet/cs" />
+      <TfmSpecificPackageFile Include="$(PKGYamlDotNet)/lib/netstandard2.0/YamlDotNet.dll" PackagePath="analyzers/dotnet/cs" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    The packaging fix above covers PackageReference consumers only. Projects that consume this
+    generator through ProjectReference with OutputItemType="Analyzer" get exactly the paths this
+    project reports as its build output, which by default is the generator dll alone — YamlDotNet
+    would be missing and the generator would silently fail to load. Adding it here as a target path
+    makes the same bundling apply to the in-repo consumer used by the tests.
+
+    Hooked through GetTargetPathDependsOn (the documented pattern) rather than AfterTargets on
+    ResolvePackageDependenciesForBuild: design-time builds in the IDE ask referencing projects for
+    GetTargetPath without running the full build pipeline, so an AfterTargets hook never fires there
+    and YamlDotNet silently drops off the analyzer list for incremental builds.
+  -->
+  <PropertyGroup>
+    <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+  </PropertyGroup>
+
+  <Target Name="GetDependencyTargetPaths">
+    <ItemGroup>
+      <TargetPathWithTargetPlatformMoniker Include="$(PKGYamlDotNet)/lib/netstandard2.0/YamlDotNet.dll" IncludeRuntimeDependency="false" />
+    </ItemGroup>
+  </Target>
+
+</Project>

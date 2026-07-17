@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+
+          <!--
+            Exclude machine-written code. Without this the denominator is dominated by the
+            System.Text.Json source-generated context and LoggerMessage partials — thousands of lines
+            this project does not author and cannot meaningfully test — which drags a well-tested
+            codebase down to a number that says nothing about the tests.
+          -->
+          <ExcludeByAttribute>GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverageAttribute,DebuggerNonUserCodeAttribute</ExcludeByAttribute>
+
+          <!-- Only the shipping libraries are measured against the coverage bar. -->
+          <Include>[EnterpriseLangfuse.Core]*,[EnterpriseLangfuse.Extensions.AI]*,[EnterpriseLangfuse.Generators]*,[EnterpriseLangfuse.MSBuild]*</Include>
+
+          <ExcludeByFile>**/obj/**/*.g.cs,**/obj/**/*.generated.cs</ExcludeByFile>
+          <SkipAutoProps>true</SkipAutoProps>
+          <UseSourceLink>false</UseSourceLink>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

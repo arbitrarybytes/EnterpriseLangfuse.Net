@@ -1,0 +1,32 @@
+<Project>
+
+  <PropertyGroup>
+    <!--
+      Opt-in, and deliberately so. A publish that silently pushed prompts to a live Langfuse would
+      make every developer's `dotnet publish` a production write; nobody expects that from a build.
+    -->
+    <SyncLangfusePromptsOnPublish Condition="'$(SyncLangfusePromptsOnPublish)' == ''">false</SyncLangfusePromptsOnPublish>
+    <SyncLangfusePromptsDryRun Condition="'$(SyncLangfusePromptsDryRun)' == ''">false</SyncLangfusePromptsDryRun>
+
+    <LangfuseBaseUrl Condition="'$(LangfuseBaseUrl)' == ''">https://cloud.langfuse.com</LangfuseBaseUrl>
+
+    <!--
+      Credentials are deliberately NOT defaulted from the LANGFUSE_* environment variables here.
+      Promoting them to MSBuild properties would record the secret key verbatim in binary logs
+      (/bl), which routinely get attached to CI runs and bug reports. The task itself reads the
+      environment variables when the properties are unset, so CI secret stores work with no
+      property involved.
+    -->
+
+    <EnterpriseLangfuseTaskAssembly Condition="'$(EnterpriseLangfuseTaskAssembly)' == ''">$(MSBuildThisFileDirectory)../tasks/net10.0/EnterpriseLangfuse.MSBuild.dll</EnterpriseLangfuseTaskAssembly>
+  </PropertyGroup>
+
+  <!--
+    Convention over configuration: every .prompt.yaml in the project is part of the sync set. Set
+    EnableDefaultLangfusePromptItems=false and populate LangfusePromptFile by hand to override.
+  -->
+  <ItemGroup Condition="'$(EnableDefaultLangfusePromptItems)' != 'false'">
+    <LangfusePromptFile Include="**/*.prompt.yaml" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
+  </ItemGroup>
+
+</Project>
