@@ -1,0 +1,32 @@
+# Build output
+bin/
+obj/
+[Bb]uild/[Oo]utput/
+artifacts/
+
+# Test + coverage output
+TestResults/
+*.coverage
+*.coverlet.json
+coverage*.xml
+coverage*.json
+
+# BenchmarkDotNet
+BenchmarkDotNet.Artifacts/
+
+# Verify snapshot tests: *.received.* are failures awaiting review and must never be committed.
+*.received.*
+*.received/
+
+# IDE / OS
+.vs/
+.idea/
+*.user
+*.suo
+.DS_Store
+Thumbs.db
+
+# Secrets — Langfuse keys must never be committed.
+*.env
+appsettings.*.local.json
+secrets.json
