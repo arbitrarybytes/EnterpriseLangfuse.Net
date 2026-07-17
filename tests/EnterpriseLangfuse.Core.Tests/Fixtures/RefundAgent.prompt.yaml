@@ -1,0 +1,15 @@
+name: RefundAgent
+type: chat
+labels:
+  - production
+tags:
+  - support
+config:
+  model: claude-opus-4-8
+  temperature: 0.2
+messages:
+  - role: system
+    content: |
+      You are a refund agent. Be concise and never promise a refund you cannot issue.
+  - role: user
+    content: "Customer {{customerName}} is asking about order {{orderId}}."

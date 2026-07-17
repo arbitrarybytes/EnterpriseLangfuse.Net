@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    A real Native AOT publish of the shipping libraries.
+
+    The IsAotCompatible analysers catch statically detectable problems, but they do not prove the code
+    links and runs once compiled ahead of time. Only publishing does. This project exists so that
+    "Native AOT compatible" is a verified claim rather than an aspiration, and so a future change that
+    reintroduces reflection fails the build instead of failing in a customer's AOT deployment.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <PublishAot>true</PublishAot>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <StripSymbols>true</StripSymbols>
+
+    <!-- Any trim/AOT warning from our code or our dependency graph must fail this build. -->
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/EnterpriseLangfuse.Core/EnterpriseLangfuse.Core.csproj" />
+    <ProjectReference Include="../../src/EnterpriseLangfuse.Extensions.AI/EnterpriseLangfuse.Extensions.AI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Fixtures/*.prompt.yaml" />
+  </ItemGroup>
+
+</Project>

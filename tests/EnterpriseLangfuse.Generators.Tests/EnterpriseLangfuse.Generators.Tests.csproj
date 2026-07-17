@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- Test assets intentionally omit XML docs. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Shouldly" />
+    <PackageReference Include="Verify.XunitV3" />
+    <PackageReference Include="Verify.SourceGenerators" />
+    <PackageReference Include="coverlet.collector" />
+    <!-- Hosts the generator in-process for driver-based tests. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <!-- The generator declares YamlDotNet PrivateAssets="all", so it does not flow here transitively. -->
+    <PackageReference Include="YamlDotNet" />
+  </ItemGroup>
+
+  <!--
+    This project is deliberately both the unit-test host and a real consumer: the same reference is
+    loaded as an analyzer by csc when building this project, so the tests in Consuming/ can only
+    compile if the generator genuinely loaded and ran during a normal `dotnet build` — including
+    resolving YamlDotNet from the analyzer directory. Driver-based unit tests cannot prove that,
+    because the test host resolves YamlDotNet through NuGet like any other reference.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="../../src/EnterpriseLangfuse.Generators/EnterpriseLangfuse.Generators.csproj"
+                      OutputItemType="Analyzer" />
+    <ProjectReference Include="../../src/EnterpriseLangfuse.Core/EnterpriseLangfuse.Core.csproj" />
+  </ItemGroup>
+
+  <!-- AdditionalFiles is how a consumer hands prompt files to the generator; the copy lets the
+       runtime assertions read back the very same YAML the generator was compiled against. -->
+  <ItemGroup>
+    <AdditionalFiles Include="Consuming/Prompts/*.prompt.yaml" />
+    <None Update="Consuming/Prompts/*.prompt.yaml" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

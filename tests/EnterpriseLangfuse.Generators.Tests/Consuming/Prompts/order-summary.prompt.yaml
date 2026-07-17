@@ -1,0 +1,7 @@
+# Exercises name sanitisation (kebab-case -> GetOrderSummaryPromptAsync) and a variable whose name
+# collides with the generated method's own `label` parameter.
+name: order-summary
+type: text
+labels:
+  - production
+prompt: "Summarise order {{orderId}} for the {{label}} channel."

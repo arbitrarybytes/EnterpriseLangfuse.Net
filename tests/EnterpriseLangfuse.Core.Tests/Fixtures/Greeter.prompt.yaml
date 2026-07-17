@@ -1,0 +1,5 @@
+name: Greeter
+type: text
+labels:
+  - production
+prompt: "Hello {{name}}, welcome to {{company}}!"
