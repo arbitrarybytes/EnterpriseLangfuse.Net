@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <!-- BenchmarkDotNet requires optimised code; a Debug run measures nothing meaningful. -->
+    <Optimize>true</Optimize>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/EnterpriseLangfuse.Core/EnterpriseLangfuse.Core.csproj" />
+    <ProjectReference Include="../../src/EnterpriseLangfuse.Extensions.AI/EnterpriseLangfuse.Extensions.AI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Fixtures/*.prompt.yaml" />
+  </ItemGroup>
+
+</Project>

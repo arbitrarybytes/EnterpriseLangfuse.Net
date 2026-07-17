@@ -1,0 +1,11 @@
+name: RefundAgent
+type: chat
+labels:
+  - production
+config:
+  model: claude-opus-4-8
+messages:
+  - role: system
+    content: You are a refund agent. Be concise.
+  - role: user
+    content: "Customer {{customerName}} is asking about order {{orderId}}."
