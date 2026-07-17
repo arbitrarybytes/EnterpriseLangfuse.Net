@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>RefundAgent</RootNamespace>
+    <UserSecretsId>enterpriselangfuse-refundagent-sample</UserSecretsId>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/EnterpriseLangfuse.Core/EnterpriseLangfuse.Core.csproj" />
+    <ProjectReference Include="../../src/EnterpriseLangfuse.Extensions.AI/EnterpriseLangfuse.Extensions.AI.csproj" />
+
+    <!-- The generator is consumed as an analyzer, exactly as a NuGet consumer would get it. -->
+    <ProjectReference Include="../../src/EnterpriseLangfuse.Generators/EnterpriseLangfuse.Generators.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.Extensions.AI" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Ini" />
+  </ItemGroup>
+
+  <!--
+    Each prompt is listed twice, and both are load-bearing:
+      AdditionalFiles  -> the generator sees it and emits GetRefundAgentPromptAsync(...)
+      EmbeddedResource -> the L3 fallback can serve it when Langfuse is unreachable
+    Registering only the first gives you typed prompts with no offline story.
+  -->
+  <ItemGroup>
+    <AdditionalFiles Include="Prompts/*.prompt.yaml" />
+    <EmbeddedResource Include="Prompts/*.prompt.yaml" />
+  </ItemGroup>
+
+</Project>
